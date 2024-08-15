@@ -3,11 +3,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
-
-
-
-
-# Expanded set of sample resumes
 resumes = [
     "Data Analyst with 3 years of experience in financial services, proficient in SQL, Python, and Tableau. Expertise in risk analysis and forecasting.",
     "Project Manager certified in PMP with 5 years of experience in healthcare projects. Strong leadership skills and expertise in Agile methodologies.",
@@ -22,34 +17,24 @@ resumes = [
 ]
 
 
-# Initialize TF-IDF vectorizer with enhanced parameters
 tfidf_vectorizer = TfidfVectorizer(max_df=0.8, min_df=2, ngram_range=(1, 3), stop_words='english')
 
-# Fit and transform the resumes to TF-IDF matrix
 tfidf_matrix = tfidf_vectorizer.fit_transform(resumes)
 
-
-# Convert TF-IDF matrix to DataFrame for visualization
 tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=tfidf_vectorizer.get_feature_names_out())
 
-# Display TF-IDF matrix
 print("TF-IDF Matrix:")
 print(tfidf_df)
 
-# Perform K-means clustering with an appropriate number of clusters
 kmeans = KMeans(n_clusters=3, random_state=42)
 clusters = kmeans.fit_predict(tfidf_matrix)
 
-# Assign clusters to resumes
 resumes_with_clusters = pd.DataFrame({"Resume": resumes, "Cluster": clusters})
 
-# Display resumes with clusters
 print("\nResumes with Clusters:")
 print(resumes_with_clusters)
 
-# Visualization of clusters
 def plot_clusters(data, clusters):
-    # Reduce dimensions to 2D using PCA, since t-SNE is too slow here
     from sklearn.decomposition import PCA
     pca = PCA(n_components=2)
     reduced_data = pca.fit_transform(data)
@@ -62,5 +47,4 @@ def plot_clusters(data, clusters):
     plt.colorbar(scatter)
     plt.show()
 
-# Plotting the clusters
 plot_clusters(tfidf_matrix.toarray(), clusters)
