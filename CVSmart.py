@@ -7,10 +7,8 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import spacy
 
-# Load English tokenizer, tagger, parser, NER, and word vectors
 nlp = spacy.load("en_core_web_md")
 
-# Sample dataset of resumes
 resumes = [
     "Senior Software Developer specializing in Java and Python with extensive experience in backend systems.",
     "Project Manager with a decade of experience in successfully managing large construction projects.",
@@ -29,7 +27,6 @@ resumes = [
     "Investment Banker focusing on mergers and acquisitions in the tech sector."
 ]
 
-# Function to preprocess resumes
 def preprocess_resumes(resumes):
     preprocessed_resumes = []
     for resume in resumes:
@@ -40,28 +37,23 @@ def preprocess_resumes(resumes):
 
 preprocessed_resumes = preprocess_resumes(resumes)
 
-# TF-IDF Vectorization
 tfidf_vectorizer = TfidfVectorizer(max_df=0.7, min_df=2, ngram_range=(1, 3))
 tfidf_matrix = tfidf_vectorizer.fit_transform(preprocessed_resumes)
 
-# Determining the optimal number of clusters
 silhouette_scores = []
-for k in range(2, min(len(resumes), 6)):  # Ensure k doesn't exceed the number of resumes
+for k in range(2, min(len(resumes), 6)):  
     kmeans = KMeans(n_clusters=k, random_state=42)
     clusters = kmeans.fit_predict(tfidf_matrix)
     score = silhouette_score(tfidf_matrix, clusters)
     silhouette_scores.append((k, score))
     print(f'Silhouette Score for {k} clusters: {score}')
 
-# Select the optimal number of clusters
 optimal_k = max(silhouette_scores, key=lambda x: x[1])[0]
 print(f'Optimal number of clusters: {optimal_k}')
 
-# Re-run K-means with the optimal number of clusters
 kmeans = KMeans(n_clusters=optimal_k, random_state=42)
 clusters = kmeans.fit_predict(tfidf_matrix)
 
-# PCA for visualization
 pca = PCA(n_components=2)
 reduced_features = pca.fit_transform(tfidf_matrix.toarray())
 
@@ -73,14 +65,13 @@ plt.ylabel('PCA Feature 2')
 plt.colorbar()
 plt.show()
 
-# Extract dominant terms for each cluster to define job categories
 def get_top_features_cluster(tfidf_matrix, prediction, n_feats):
     labels = np.unique(prediction)
     dfs = []
     for label in labels:
-        id_temp = np.where(prediction==label)  # indices for each cluster
-        x_means = np.mean(tfidf_matrix[id_temp], axis=0)  # mean tf-idf value for each feature in the cluster
-        sorted_means = np.argsort(x_means)[::-1][:n_feats]  # indices with top mean scores
+        id_temp = np.where(prediction==label)  
+        x_means = np.mean(tfidf_matrix[id_temp], axis=0)  
+        sorted_means = np.argsort(x_means)[::-1][:n_feats]  
         features = tfidf_vectorizer.get_feature_names_out()
         best_features = [(features[i], x_means[i]) for i in sorted_means]
         df = pd.DataFrame(best_features, columns=['features', 'score'])
